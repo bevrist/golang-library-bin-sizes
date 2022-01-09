@@ -8,6 +8,8 @@ go mod init test
 
 rm -rf test
 # load list of libraries
+cp libraries.txt /tmp/libraries.txt
+sed -i -E -r 's/(\S)(\/)(\S)/\1\\\/\3/g' /tmp/libraries.txt
 COUNT=0
 while read -r line; do
   # make simple go file for each library
@@ -15,9 +17,9 @@ while read -r line; do
   cp template.go test/$COUNT/main.go
 
   sed -i -E "s/\/\/\ LIBRARY_GOES_HERE/_ \"$line\"/g" test/$COUNT/main.go
-  sed -i -E "s/\ \|\ /\"\n\t_ \"/g" test/$COUNT/main.go
+  sed -i -E -r "s/\ \|\ /\"\n\t_ \"/g" test/$COUNT/main.go
   ((COUNT++))
-done < libraries.txt
+done < /tmp/libraries.txt
 
 go mod tidy
 go get -v ./...
@@ -74,11 +76,16 @@ while read -r line; do
   # gowasm.gz
   ls -lh test/$COUNT | grep -E '\sgowasm.gz$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
   echo -n "," >> sizes.csv
-  # tinygo
-  ls -lh test/$COUNT | grep -E '\stinygo$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
+  # only list if tinygo compile succeeded
+  if [ -f "test/$COUNT/tinygo" ]; then
+    # tinygo
+    ls -lh test/$COUNT | grep -E '\stinygo$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
+  fi
   echo -n "," >> sizes.csv
-  # tinywasm
-  ls -lh test/$COUNT | grep -E '\stinywasm$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
+  if [ -f "test/$COUNT/tinygo" ]; then
+    # tinywasm
+    ls -lh test/$COUNT | grep -E '\stinywasm$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
+  fi
 
   echo "" >> sizes.csv
   ((COUNT++))
