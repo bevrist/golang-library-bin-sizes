@@ -76,12 +76,10 @@ while read -r line; do
   # gowasm.gz
   ls -lh test/$COUNT | grep -E '\sgowasm.gz$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
   echo -n "," >> sizes.csv
-  # only list if tinygo compile succeeded
-  if [ -f "test/$COUNT/tinygo" ]; then
-    # tinygo
-    ls -lh test/$COUNT | grep -E '\stinygo$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
-  fi
+  # tinygo
+  ls -lh test/$COUNT | grep -E '\stinygo$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
   echo -n "," >> sizes.csv
+  # only list if tinygo compile succeeded
   if [ -f "test/$COUNT/tinygo" ]; then
     # tinywasm
     ls -lh test/$COUNT | grep -E '\stinywasm$' | awk '{print $5}' | tr -d '\n' >> sizes.csv
